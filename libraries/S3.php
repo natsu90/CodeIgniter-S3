@@ -458,6 +458,30 @@ class S3 {
 	{
 		return self::putObject($string, $bucket, $uri, $acl, $metaHeaders, $contentType);
 	}
+	
+	/**
+	 * Put an object from a form input
+	 *
+	 * @param string $input Form input name
+	 * @param string $bucket Bucket name
+	 * @param string $uri Object URI
+	 * @return boolean
+	 */
+	public static function putObjectInput($input, $bucket, $uri)
+	{
+		if(isset($_FILES[$input]))
+			return self::putObject(self::inputFile($_FILES[$input]['tmp_name']), $bucket, $uri);
+
+		$img = str_replace(array('data:image/png;base64,', 'data:image/jpeg;base64,'), '', $_POST[$input]);
+		$img = str_replace(' ', '+', $img);
+		$data = base64_decode($img);
+		$file = sys_get_temp_dir(). '/' . uniqid() . '.tmp';
+		$success = file_put_contents($file, $data);
+		if($success)
+			return self::putObject(self::inputFile($file), $bucket, $uri);
+
+		return false;
+	}
 
 	/**
 	 * Get an object
